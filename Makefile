@@ -3,13 +3,17 @@ PYTHON=python3
 PIP=pip
 REQUIREMENTS=requirements.txt
 APP=src.main
+YOLOV5_DIR=content/yolov5
 
 # Default target
-all: install run
+all: clone install run
 
 # Install dependencies
 install:
 	$(PIP) install -r $(REQUIREMENTS)
+
+clone:
+	git clone https://github.com/ultralytics/yolov5.git $(YOLOV5_DIR)
 
 # Run the application
 run:

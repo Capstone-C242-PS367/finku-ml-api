@@ -48,7 +48,10 @@ setuptools>=70.0.0 # Snyk vulnerability fix
 # albumentations>=1.0.3
 # pycocotools>=2.0.6  # COCO mAP
 
-flask
+Flask==3.0.3
+gunicorn==22.0.0
+Werkzeug==3.0.3
 tensorflow
 imutils
 pdf2image
+google-cloud-storage

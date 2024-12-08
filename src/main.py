@@ -1,19 +1,43 @@
 import os
 import shutil
-
+from google.cloud import storage
+import tempfile
 import pandas as pd
 from flask import Flask, request, jsonify
 from tensorflow.keras.models import load_model
 
-from src.utils import ocr_predict_date, ocr_predict_nominal, ocr_predict_type, convert_pdf_to_png, detect_png, \
-    crop_image
+from src.utils import ocr_predict_date, ocr_predict_nominal, ocr_predict_type, convert_pdf_to_png, detect_png, crop_image
 
 app = Flask(__name__)
-OCR_Model_Path = "./model/my_model_3.h5"
-Object_Detection_Model_Path = "./model/my_model_3.weights.h5"
-model = load_model(OCR_Model_Path)
+# OCR_Model_Path = "./model/my_model_3.h5"
+# Object_Detection_Model_Path = "./model/my_model_3.weights.h5"
+# model = load_model(OCR_Model_Path)
+# list_label = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
+# UPLOAD_FOLDER = 'uploads'  # Make sure this folder exists
+# app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+
+BUCKET_NAME = 'finku-model'
+MODEL_NAME = 'my_model_3.h5'
+WEIGHTS_NAME = 'my_model_3.weights.h5'
+
+def download_blob(bucket_name, source_blob_name, destination_file_name):
+    storage_client = storage.Client()
+    bucket = storage_client.bucket(bucket_name)
+    blob = bucket.blob(source_blob_name)
+    blob.download_to_filename(destination_file_name)
+    print(f"Downloaded storage object {source_blob_name} to local file {destination_file_name}.")
+
+with tempfile.TemporaryDirectory() as tmpdirname:
+    OCR_Model_Path = os.path.join(tmpdirname, MODEL_NAME)
+    Object_Detection_Model_Path = os.path.join(tmpdirname, WEIGHTS_NAME)
+
+    download_blob(BUCKET_NAME, MODEL_NAME, OCR_Model_Path)
+    download_blob(BUCKET_NAME, WEIGHTS_NAME, Object_Detection_Model_Path)
+
+    model = load_model(OCR_Model_Path)
+
 list_label = '0123456789ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz'
-UPLOAD_FOLDER = 'uploads'  # Make sure this folder exists
+UPLOAD_FOLDER = 'uploads'
 app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
 
 @app.route('/')
@@ -93,5 +117,5 @@ def predict():
     # return "hello world"
 
 if __name__ == '__main__':
-    app.run(host='0.0.0.0', port=8000)
+    app.run(debug=True, host="0.0.0.0", port=int(os.environ.get("PORT", 8080)))
 
