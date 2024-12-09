@@ -134,15 +134,14 @@ def ocr_predict_nominal(img_path, model, list_label):
         return "Invalid nominal"
 
     integer_part = cleaned_text[:-2]
-    decimal_part = cleaned_text[-2:]
 
     if not integer_part:
         integer_part = '0'
 
     formatted_integer_part = "{:,}".format(int(integer_part)).replace(",", ".")
 
-    formatted_nominal = f"{formatted_integer_part},{decimal_part}"
-    return "Rp " + formatted_nominal
+    formatted_nominal = f"{formatted_integer_part}"
+    return formatted_nominal
 
 
 def ocr_predict_type(img_path, model, list_label):
